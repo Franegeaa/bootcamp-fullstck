@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter } from "./Filter";
 import { PersonForm } from "./PersonForm";
 import { Person } from "./Person";
+import { getAll, createContact, deleteContact } from "./services/contacts";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNro, setNewNro] = useState("");
   const [filter, setFilter] = useState("");
   const [personsFiltered, setPersonsFiltered] = useState(persons);
+
+  const handleDelete = (person) => {
+    return () => {
+      if (window.confirm(`Delete ${person.name}?`)) {
+        deleteContact(person.id).then(() => {
+          setPersons(persons.filter((p) => p.id !== person.id));
+        });
+      }
+    };
+  
+  }
+
+  useEffect(() => {
+    getAll().then((response) => setPersons(response));
+  }, []);
 
   const handleNewName = (event) => {
     setNewName(event.target.value);
@@ -34,17 +45,17 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault();
     const even = (element) => element.name === newName;
+    const personObject = {
+      name: newName,
+      number: newNro,
+    };
 
     if (persons.some(even)) {
       window.alert(`${newName} is already added to phonebook`);
     } else {
-      setPersons(
-        persons.concat({
-          name: newName,
-          number: newNro,
-          id: persons.length + 1,
-        })
-      );
+      createContact(personObject).then((response) => {
+        setPersons(persons.concat(response));
+      });
     }
     setNewName("");
     setNewNro("");
@@ -66,7 +77,7 @@ const App = () => {
       {filter === ""
         ? persons.map((person) => (
             <div key={person.id}>
-              <Person person={person} />
+              <Person person={person} /> <button onClick={handleDelete(person)}>delete</button>  
             </div>
           ))
         : personsFiltered.map((person) => (
