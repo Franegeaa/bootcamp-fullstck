@@ -3,6 +3,7 @@ import { Filter } from "./Filter";
 import { PersonForm } from "./PersonForm";
 import { Person } from "./Person";
 import { getAll, createContact, deleteContact } from "./services/contacts";
+import "./App.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -10,6 +11,7 @@ const App = () => {
   const [newNro, setNewNro] = useState("");
   const [filter, setFilter] = useState("");
   const [personsFiltered, setPersonsFiltered] = useState(persons);
+  const [message, setMessage] = useState(null);
 
   const handleDelete = (person) => {
     return () => {
@@ -55,6 +57,10 @@ const App = () => {
     } else {
       createContact(personObject).then((response) => {
         setPersons(persons.concat(response));
+        setMessage(`Contact ${personObject.name} saved successfully!`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 3000);
       });
     }
     setNewName("");
@@ -66,6 +72,7 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter filter={filter} handleFilter={handleFilter} />
       <h2>add a new</h2>
+      {message && <div className="message">{message}</div>}
       <PersonForm
         addPerson={addPerson}
         handleNewName={handleNewName}
